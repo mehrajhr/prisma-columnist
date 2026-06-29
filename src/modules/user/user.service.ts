@@ -2,6 +2,7 @@ import type { payloadRegisterUser } from "./user.interface";
 import { prisma } from "../../lib/prisma";
 import bcrypt from "bcryptjs";
 import config from "../../config";
+import { profile } from "node:console";
 
 const registerUserInDB = async (payload: payloadRegisterUser) => {
   const { name, email, password, profilePhoto } = payload;
@@ -50,6 +51,22 @@ const registerUserInDB = async (payload: payloadRegisterUser) => {
   return user;
 };
 
+const getUserInDB = async (id: string) => {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: id },
+    omit: {
+      password: true,
+    },
+    include: {
+      profile: true,
+    },
+  });
+
+
+  return user
+};
+
 export const userService = {
   registerUserInDB,
+  getUserInDB,
 };

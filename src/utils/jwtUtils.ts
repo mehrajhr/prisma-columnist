@@ -11,6 +11,16 @@ const createToken = (
   } as SignOptions);
 };
 
+const verifyToken = (token: string, secret: string) => {
+  try {
+    const verifiedToken = jwt.verify(token, secret);
+    return verifiedToken;
+  } catch (error: any) {
+    throw new Error("Invalid Token");
+  }
+};
+
 export const jwtUtils = {
   createToken,
+  verifyToken,
 };
