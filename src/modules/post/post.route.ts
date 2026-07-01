@@ -11,4 +11,6 @@ router.post(
   postsController.createPost,
 );
 
+router.get("/", postsController.getAllPost);
+
 export const postsRoutes = router;
