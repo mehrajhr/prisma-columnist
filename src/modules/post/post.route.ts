@@ -12,6 +12,11 @@ router.post(
 );
 
 router.get("/", postsController.getAllPost);
-router.get("/:postId",postsController.getPostByID);
+router.get(
+  "/my-posts",
+  auth(Role.ADMIN, Role.USER, Role.AUTHOR),
+  postsController.getMyPosts,
+);
+router.get("/:postId", postsController.getPostByID);
 
 export const postsRoutes = router;
