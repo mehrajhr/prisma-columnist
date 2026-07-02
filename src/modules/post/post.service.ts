@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { ICreatePost } from "./post.interface";
+import type { ICreatePost, IUpdatePost } from "./post.interface";
 
 const createPostInDB = async (userId: string, payload: ICreatePost) => {
   const result = await prisma.post.create({
@@ -80,9 +80,44 @@ const getMyPosts = async (authorId: string) => {
   return posts;
 };
 
+const updatePost = async (
+  postId: string,
+  payload: IUpdatePost,
+  authorId: string,
+  isAdmin: boolean,
+) => {
+  const post = await prisma.post.findUniqueOrThrow({
+    where: {
+      id: postId,
+    },
+  });
+
+  if (!isAdmin && post.authorId !== authorId) {
+    throw new Error("You don't have permission to update this post!");
+  }
+
+  const updatedPost = await prisma.post.update({
+    where: {
+      id: postId,
+    },
+    data: payload,
+    include: {
+      comments: true,
+      author: {
+        omit: {
+          password: true,
+        },
+      },
+    },
+  });
+
+  return updatedPost;
+};
+
 export const postService = {
   createPostInDB,
   getAllPostFromDB,
   getPostByID,
-  getMyPosts
+  getMyPosts,
+  updatePost
 };
