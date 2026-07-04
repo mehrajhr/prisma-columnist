@@ -23,6 +23,26 @@ const createComment = catchAsync(
   },
 );
 
+const moderateComment = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const commentId = req.params.commentId;
+    const payload = req.body;
+
+    const result = await commentService.moderateCommentInDB(
+      commentId as string,
+      payload,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Comment moderate successfully",
+      data: result,
+    });
+  },
+);
+
 export const commentController = {
   createComment,
+  moderateComment,
 };
