@@ -59,8 +59,45 @@ const getCommentsByAuthorID = catchAsync(
   },
 );
 
+const getCommentsById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { commentId } = req.params;
+
+    const result = await commentService.getCommentById(commentId as string);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Data fetched successfully",
+      data: result,
+    });
+  },
+);
+
+const updateComment = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.id;
+    const { commentId } = req.params;
+    const payload = req.body;
+
+    const result = await commentService.updateCommentInDB(
+      userId as string,
+      commentId as string,
+      payload,
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Comment updated successfully.",
+      data: result,
+    });
+  },
+);
+
 export const commentController = {
   createComment,
   moderateComment,
   getCommentsByAuthorID,
+  getCommentsById,
+  updateComment,
 };

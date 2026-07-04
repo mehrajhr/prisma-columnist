@@ -1,5 +1,9 @@
 import { prisma } from "../../lib/prisma";
-import type { ICreateComment, IModerateComment } from "./comment.interface";
+import type {
+  ICreateComment,
+  IModerateComment,
+  IUpdateComment,
+} from "./comment.interface";
 
 const createCommentInDB = async (payload: ICreateComment, authorId: string) => {
   const post = await prisma.post.findUnique({
@@ -74,8 +78,54 @@ const getCommentsByAuthorIdInDB = async (authorId: string) => {
   return comments;
 };
 
+const getCommentById = async (commentId: string) => {
+  const comment = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+    },
+  });
+  if (!commentId) {
+    throw new Error("This comment doesn't exist!");
+  }
+
+  return comment;
+};
+
+const updateCommentInDB = async (
+  userId: string,
+  commentId: string,
+  payload: IUpdateComment,
+) => {
+  const comment = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+    },
+  });
+
+  if (!comment) {
+    throw new Error("This comment doesn't exist in this system");
+  }
+
+  if (comment.authorId !== userId) {
+    throw new Error("Forbidden! Only comment owner's update their comments .");
+  }
+
+  const updatedComment = await prisma.comment.update({
+    where: {
+      id: commentId,
+    },
+    data: {
+      content: payload.content,
+    },
+  });
+
+  return updatedComment;
+};
+
 export const commentService = {
   createCommentInDB,
   moderateCommentInDB,
-  getCommentsByAuthorIdInDB
+  getCommentsByAuthorIdInDB,
+  getCommentById,
+  updateCommentInDB
 };

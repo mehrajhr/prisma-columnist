@@ -6,11 +6,18 @@ import { commentController } from "./comment.controller";
 const router = Router();
 
 router.get("/author/:authorId", commentController.getCommentsByAuthorID);
+router.get("/:commentId", commentController.getCommentsById);
 
 router.post(
   "/",
   auth(Role.USER, Role.ADMIN, Role.AUTHOR),
   commentController.createComment,
+);
+
+router.patch(
+  "/:commentId",
+  auth(Role.ADMIN, Role.AUTHOR, Role.USER),
+  commentController.updateComment,
 );
 
 router.patch(
