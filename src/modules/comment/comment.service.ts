@@ -52,7 +52,30 @@ const moderateCommentInDB = async (id: string, payload: IModerateComment) => {
   return updateComment;
 };
 
+const getCommentsByAuthorIdInDB = async (authorId: string) => {
+  const author = await prisma.user.findUnique({
+    where: {
+      id: authorId,
+    },
+  });
+
+  if (!author) {
+    throw new Error(
+      "Invalid author id . This author not exist in this system.",
+    );
+  }
+
+  const comments = await prisma.comment.findMany({
+    where: {
+      authorId: authorId,
+    },
+  });
+
+  return comments;
+};
+
 export const commentService = {
   createCommentInDB,
-  moderateCommentInDB
+  moderateCommentInDB,
+  getCommentsByAuthorIdInDB
 };
