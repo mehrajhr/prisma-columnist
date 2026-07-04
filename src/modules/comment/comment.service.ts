@@ -107,7 +107,7 @@ const updateCommentInDB = async (
   }
 
   if (comment.authorId !== userId) {
-    throw new Error("Forbidden! Only comment owner's update their comments .");
+    throw new Error("Forbidden! You are not the owner of this comment!");
   }
 
   const updatedComment = await prisma.comment.update({
@@ -122,10 +122,29 @@ const updateCommentInDB = async (
   return updatedComment;
 };
 
+const deleteCommentInDB = async (userId: string, commentId: string) => {
+  const comment = await prisma.comment.findUniqueOrThrow({
+    where: {
+      id: commentId,
+    },
+  });
+
+  if (comment.authorId !== userId) {
+    throw new Error("Forbidden! You are not the owner of this comment!");
+  }
+
+  await prisma.comment.delete({
+    where: {
+      id: commentId,
+    },
+  });
+};
+
 export const commentService = {
   createCommentInDB,
   moderateCommentInDB,
   getCommentsByAuthorIdInDB,
   getCommentById,
-  updateCommentInDB
+  updateCommentInDB,
+  deleteCommentInDB,
 };
