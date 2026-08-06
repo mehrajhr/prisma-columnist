@@ -13,16 +13,55 @@ const createPostInDB = async (userId: string, payload: ICreatePost) => {
 };
 
 const getAllPostFromDB = async () => {
-  const posts = await prisma.post.findMany({
-    include: {
-      author: {
-        omit: {
-          password: true,
-        },
-      },
-      comments: true,
-    },
-  });
+  // filtering or exact matching
+  // const posts = await prisma.post.findMany({
+  //   where: {
+  //     AND: [
+  //       {
+  //         title: "Ami English e gan gai",
+  //       },
+  //       {
+  //         content: "I am new in this field.",
+  //       },
+  //     ],
+  //   },
+  //   include: {
+  //     author: {
+  //       omit: {
+  //         password: true,
+  //       },
+  //     },
+  //     comments: true,
+  //   },
+  // });
+
+  // searching or partial matching
+  // const posts = await prisma.post.findMany({
+  //   where: {
+  //     OR: [
+  //       {
+  //         title: {
+  //           contains: "english",
+  //           mode: "insensitive",
+  //         },
+  //       },
+  //       {
+  //         content: {
+  //           contains: "english",
+  //           mode: "insensitive",
+  //         },
+  //       },
+  //     ],
+  //   },
+  //   include: {
+  //     author: {
+  //       omit: {
+  //         password: true,
+  //       },
+  //     },
+  //     comments: true,
+  //   },
+  // });
   return posts;
 };
 
