@@ -62,6 +62,29 @@ const getAllPostFromDB = async () => {
   //     comments: true,
   //   },
   // });
+
+  const posts = await prisma.post.findMany({
+    // pagination implement
+    // law of pagination take or limit = 5 and page = 2 then skip = (page - 1) * limit
+
+    // take : 1,
+    // skip : 1,
+
+    // sorting
+
+    orderBy :{
+      createdAt : "desc",
+    },
+
+    include: {
+      author: {
+        omit: {
+          password: true,
+        },
+      },
+      comments: true,
+    },
+  });
   return posts;
 };
 
