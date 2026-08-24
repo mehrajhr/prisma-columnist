@@ -7,9 +7,11 @@ model Post {
     status     PostStatus @default(PUBLISHED)
     tags       String[]
     views      Int        @default(0)
-    authorId   String
-    author     User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-    comments   Comment[]
+    isPremium  Boolean    @default(false)
+
+    authorId String
+    author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    comments Comment[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
