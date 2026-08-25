@@ -27,9 +27,9 @@ const createCheckoutSessions = async (userId: string) => {
     const sesseion = await stripe.checkout.sessions.create({
       line_items: [
         {
-            price : config.stripe_price_id,
-            quantity : 1
-        }
+          price: config.stripe_price_id,
+          quantity: 1,
+        },
       ],
       mode: "subscription",
       customer: stripeCustomerId,
@@ -44,6 +44,30 @@ const createCheckoutSessions = async (userId: string) => {
   return transactionResult;
 };
 
+const handleWebhook = async (payload: Buffer, signature: string) => {
+  const endpointSecret = config.stripe_webhook_secret as string;
+  const event = stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    endpointSecret,
+  );
+
+  switch (event.type) {
+    case "checkout.session.completed":
+      break;
+    case "customer.subscription.updated":
+      break;
+    case "customer.subscription.deleted":
+      const paymentObject = event.data.object;
+      break;
+    default:
+      // Unexpected event type
+      console.log(`Unhandled event type ${event.type}.`);
+      break;
+  }
+};
+
 export const subscriptionServices = {
   createCheckoutSessions,
+  handleWebhook,
 };
