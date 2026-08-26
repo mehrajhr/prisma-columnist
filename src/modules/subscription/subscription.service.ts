@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
+import { SubscriptionStatus } from "../../../generated/prisma/enums";
 
 const createCheckoutSessions = async (userId: string) => {
   const transactionResult = await prisma.$transaction(async (tx) => {
@@ -59,9 +60,10 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
       await handleCheckoutCompleted(session);
       break;
     case "customer.subscription.updated":
+      await handleChangeSubscription(event.data.object);
       break;
     case "customer.subscription.deleted":
-      const paymentObject = event.data.object;
+      await handleChangeSubscription(event.data.object);
       break;
     default:
       // Unexpected event type
@@ -102,6 +104,49 @@ const handleCheckoutCompleted = async (session: Stripe.Checkout.Session) => {
     update: {
       stripeCustomerId,
       stripeSubscriptionId,
+      currentPeriodEnd,
+    },
+  });
+};
+
+const handleChangeSubscription = async (payload: Stripe.Subscription) => {
+  const subscriptionId = payload.id;
+
+  const status =
+    payload.status === "active"
+      ? SubscriptionStatus.ACTIVE
+      : payload.status === "trialing"
+        ? SubscriptionStatus.ACTIVE
+        : payload.status === "canceled"
+          ? SubscriptionStatus.CANCELED
+          : SubscriptionStatus.EXPIRED;
+
+  const stripeSubscription =
+    await stripe.subscriptions.retrieve(subscriptionId);
+
+  const currentPeriodEndInMillisec =
+    stripeSubscription.items.data[0]?.current_period_end!;
+
+  const currentPeriodEnd = new Date(currentPeriodEndInMillisec * 1000);
+
+  const isSubscriptionExist = await prisma.subscription.findUnique({
+    where: {
+      stripeSubscriptionId: subscriptionId,
+    },
+  });
+
+  if (!isSubscriptionExist) {
+    console.log(
+      `Webhook : NO subscription found for subscription id : ${subscriptionId}`,
+    );
+  }
+
+  await prisma.subscription.update({
+    where: {
+      stripeSubscriptionId: subscriptionId,
+    },
+    data: {
+      status,
       currentPeriodEnd,
     },
   });
