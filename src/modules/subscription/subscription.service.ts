@@ -3,6 +3,7 @@ import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
 import { SubscriptionStatus } from "../../../generated/prisma/enums";
+import status from "http-status";
 
 const createCheckoutSessions = async (userId: string) => {
   const transactionResult = await prisma.$transaction(async (tx) => {
@@ -152,7 +153,27 @@ const handleChangeSubscription = async (payload: Stripe.Subscription) => {
   });
 };
 
+const getSubscriptionStatus = async (userId: string) => {
+  const isSubscriptionExist = await prisma.subscription.findUniqueOrThrow({
+    where: {
+      userId,
+    },
+  });
+
+  const isActive =
+    isSubscriptionExist.status === "ACTIVE" &&
+    isSubscriptionExist.currentPeriodEnd &&
+    new Date(isSubscriptionExist.currentPeriodEnd) > new Date();
+
+  return{
+    status : isSubscriptionExist.status,
+    isSubscribed : isActive,
+    currentPeriodEnd : isSubscriptionExist.currentPeriodEnd
+  }
+};
+
 export const subscriptionServices = {
   createCheckoutSessions,
   handleWebhook,
+  getSubscriptionStatus
 };
