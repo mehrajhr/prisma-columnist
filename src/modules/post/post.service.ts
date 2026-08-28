@@ -84,6 +84,10 @@ const getAllPostFromDB = async (query: IPostQuery) => {
     });
   }
 
+  andConditons.push({
+    isPremium : false
+  })
+
   // filtering or exact matching
   // const posts = await prisma.post.findMany({
   //   where: {
