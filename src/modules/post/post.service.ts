@@ -4,6 +4,22 @@ import { prisma } from "../../lib/prisma";
 import type { ICreatePost, IPostQuery, IUpdatePost } from "./post.interface";
 
 const createPostInDB = async (userId: string, payload: ICreatePost) => {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+    },
+    include: {
+      subscription: true,
+    },
+  });
+
+  if (payload.isPremium && user.subscription?.status !== "ACTIVE") {
+    throw new Error(
+      "You are not premium user so you con not create premium post!",
+    );
+  }
+  
+
   const result = await prisma.post.create({
     data: {
       ...payload,
@@ -85,8 +101,8 @@ const getAllPostFromDB = async (query: IPostQuery) => {
   }
 
   andConditons.push({
-    isPremium : false
-  })
+    isPremium: false,
+  });
 
   // filtering or exact matching
   // const posts = await prisma.post.findMany({
@@ -208,8 +224,22 @@ const getAllPostFromDB = async (query: IPostQuery) => {
     },
   });
 
+  const totalPOstCount = await prisma.post.count({
+    where: {
+      AND : andConditons
+    }
+  })
+
   // console.log(posts)
-  return posts;
+  return {
+    data : posts,
+    meta : {
+      page : page,
+      limit : limit,
+      total : totalPOstCount,
+      totalPages : Math.ceil(totalPOstCount/limit)
+    }
+  };
 };
 
 const getPostByID = async (postId: string) => {
@@ -255,6 +285,7 @@ const getPostByID = async (postId: string) => {
     const post = await tx.post.findUniqueOrThrow({
       where: {
         id: postId,
+        isPremium: false,
       },
       include: {
         author: {

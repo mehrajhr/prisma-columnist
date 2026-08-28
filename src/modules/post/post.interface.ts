@@ -5,6 +5,7 @@ export interface ICreatePost {
   title: string;
   content: string;
   thumbnail?: string;
+  isPremium?: boolean;
   isFeatured?: boolean;
   status?: PostStatus;
   tags: string[];
@@ -19,10 +20,10 @@ export interface IUpdatePost {
   tags?: string[];
 }
 
-export interface IPostQuery extends PostWhereInput{
-  searchTerm ?: string,
-  page ?: string,
-  limit ?: string,
-  sortOrder ?: string,
-  sortBy ?: string
+export interface IPostQuery extends PostWhereInput {
+  searchTerm?: string;
+  page?: string;
+  limit?: string;
+  sortOrder?: string;
+  sortBy?: string;
 }

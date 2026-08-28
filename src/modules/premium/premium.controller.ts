@@ -6,7 +6,8 @@ import httpStatus from "http-status";
 
 const getPremiumContent = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await premiumService.getPremiumContent();
+    const query = req.query;
+    const result = await premiumService.getPremiumContent(query);
 
     sendResponse(res, {
       success: true,
